@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #ffffff;
+      padding: 16px;
+      overflow-x: hidden;
+    }
+
+    .widget-header {
+      text-align: center;
+      margin-bottom: 24px;
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+
+    .widget-logo {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px;
+      margin: 0 auto 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: bold;
+      color: white;
+      transform: scale(0);
+    }
+
+    .widget-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 4px;
+    }
+
+    .widget-subtitle {
+      font-size: 12px;
+      color: #718096;
+    }
+
+    .search-box {
+      position: relative;
+      margin-bottom: 20px;
+      opacity: 0;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 40px 12px 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    .search-input:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .search-button {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .search-button:hover {
+      transform: translateY(-50%) scale(1.05);
+    }
+
+    .auto-search-info {
+      background: #edf2f7;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: #4a5568;
+      text-align: center;
+      opacity: 0;
+    }
+
+    .results-container {
+      opacity: 0;
+    }
+
+    .result-card {
+      background: #f7fafc;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border-left: 4px solid #667eea;
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .result-avatar {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 16px;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+
+    .result-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #2d3748;
+      line-height: 1.3;
+    }
+
+    .result-info {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .info-row {
+      display: flex;
+      align-items: center;
+      font-size: 13px;
+      color: #4a5568;
+    }
+
+    .info-icon {
+      margin-right: 8px;
+      width: 18px;
+      flex-shrink: 0;
+    }
+
+    .info-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .result-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 10px 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #667eea;
+      border: 2px solid #667eea;
+    }
+
+    .btn-secondary:hover {
+      background: #f7fafc;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 32px 16px;
+      color: #718096;
+    }
+
+    .loading-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #e2e8f0;
+      border-top-color: #667eea;
+      border-radius: 50%;
+      margin: 0 auto 12px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 32px 16px;
+      color: #718096;
+    }
+
+    .no-results-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="widget-header">
+    <div class="widget-logo">AP</div>
+    <h1 class="widget-title">APManager</h1>
+    <p class="widget-subtitle">Búsqueda de Estudiantes</p>
+  </div>
+
+  <div class="auto-search-info" id="autoSearchInfo" style="display: none;">
+    🔍 Buscando automáticamente por: <strong id="autoSearchTerm"></strong>
+  </div>
+
+  <div class="search-box">
+    <input 
+      type="text" 
+      class="search-input" 
+      placeholder="Email, teléfono o nombre..."
+      id="searchInput"
+    >
+    <button class="search-button" onclick="buscar()">🔍</button>
+  </div>
+
+  <div id="results" class="results-container"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@zendesk/sdk-apps@2.0.0/index.js"></script>
+  <script>
+    const client = ZAFClient.init();
+    let datosTicket = {};
+
+    // Inicializar widget
+    async function inicializar() {
+      try {
+        // Obtener datos del ticket
+        const data = await client.get('ticket');
+        datosTicket = data.ticket;
+
+        // Animar entrada del widget
+        animarEntrada();
+
+        // Búsqueda automática por email del solicitante
+        if (datosTicket.requester && datosTicket.requester.email) {
+          const email = datosTicket.requester.email;
+          document.getElementById('autoSearchTerm').textContent = email;
+          document.getElementById('autoSearchInfo').style.display = 'block';
+          
+          anime({
+            targets: '.auto-search-info',
+            opacity: [0, 1],
+            translateY: [10, 0],
+            duration: 600,
+            delay: 800
+          });
+
+          // Buscar automáticamente
+          setTimeout(() => {
+            document.getElementById('searchInput').value = email;
+            buscar();
+          }, 1200);
+        }
+
+        // Redimensionar widget
+        client.invoke('resize', { width: '100%', height: '600px' });
+      } catch (error) {
+        console.error('Error inicializando:', error);
+      }
+    }
+
+    function animarEntrada() {
+      anime.timeline({
+        easing: 'easeOutExpo'
+      })
+      .add({
+        targets: '.widget-logo',
+        scale: [0, 1],
+        rotate: [180, 0],
+        duration: 600
+      })
+      .add({
+        targets: '.widget-header',
+        opacity: [0, 1],
+        translateY: [-20, 0],
+        duration: 400
+      }, '-=400')
+      .add({
+        targets: '.search-box',
+        opacity: [0, 1],
+        translateY: [20, 0],
+        duration: 400
+      }, '-=200');
+    }
+
+    function buscar() {
+      const input = document.getElementById('searchInput').value.trim();
+      const resultsContainer = document.getElementById('results');
+
+      if (!input) {
+        resultsContainer.innerHTML = '';
+        anime({
+          targets: '.results-container',
+          opacity: 0,
+          duration: 300
+        });
+        return;
+      }
+
+      // Mostrar loading
+      resultsContainer.innerHTML = `
+        <div class="loading">
+          <div class="loading-spinner"></div>
+          <p>Buscando en APManager...</p>
+        </div>
+      `;
+
+      anime({
+        targets: '.results-container',
+        opacity: [0, 1],
+        duration: 300
+      });
+
+      // Simular búsqueda (en producción llamaría a tu API/BD local)
+      setTimeout(() => {
+        const resultados = buscarEnDatosDemo(input);
+        mostrarResultados(resultados);
+      }, 1000);
+    }
+
+    // Datos de demostración
+    function buscarEnDatosDemo(termino) {
+      const datos = [
+        {
+          nombre: 'Astrid Jaramillo Calderón',
+          email: 'astridjaramilloc@gmail.com',
+          telefono: '593998591791',
+          programa: 'Maestría en Gerencia de Instituciones de Salud',
+          matricula: '51543',
+          leadId: '3085991',
+          estado: 'Inscrito'
+        },
+        {
+          nombre: 'Juan Pérez García',
+          email: 'juan.perez@gmail.com',
+          telefono: '593991234567',
+          programa: 'Maestría en Administración de Empresas',
+          matricula: '51544',
+          leadId: '3085992',
+          estado: 'Pagos'
+        }
+      ];
+
+      return datos.filter(item => 
+        item.nombre.toLowerCase().includes(termino.toLowerCase()) ||
+        item.email.toLowerCase().includes(termino.toLowerCase()) ||
+        item.telefono.includes(termino)
+      );
+    }
+
+    function mostrarResultados(resultados) {
+      const resultsContainer = document.getElementById('results');
+
+      if (resultados.length === 0) {
+        resultsContainer.innerHTML = `
+          <div class="no-results">
+            <div class="no-results-icon">🔍</div>
+            <p><strong>No se encontraron resultados</strong></p>
+            <p style="font-size: 12px; margin-top: 8px;">Intenta con otro término de búsqueda</p>
+          </div>
+        `;
+        
+        anime({
+          targets: '.no-results',
+          opacity: [0, 1],
+          scale: [0.9, 1],
+          duration: 600
+        });
+        return;
+      }
+
+      resultsContainer.innerHTML = resultados.map(item => {
+        const iniciales = item.nombre.split(' ').map(n => n[0]).join('').substring(0, 2);
+        return `
+          <div class="result-card">
+            <div class="result-header">
+              <div class="result-avatar">${iniciales}</div>
+              <div class="result-name">${item.nombre}</div>
+            </div>
+            <div class="result-info">
+              <div class="info-row">
+                <span class="info-icon">📧</span>
+                <span class="info-text">${item.email}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-icon">📱</span>
+                <span class="info-text">${item.telefono}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-icon">🎓</span>
+                <span class="info-text">${item.programa}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-icon">📋</span>
+                <span class="info-text">Matrícula: ${item.matricula}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-icon">⚡</span>
+                <span class="info-text">Estado: ${item.estado}</span>
+              </div>
+            </div>
+            <div class="result-actions">
+              <button class="btn btn-primary" onclick="tipificar('${item.leadId}')">
+                ✍️ Tipificar
+              </button>
+              <button class="btn btn-secondary" onclick="verPerfil('${item.leadId}')">
+                👤 Perfil
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Animar cada tarjeta
+      anime({
+        targets: '.result-card',
+        opacity: [0, 1],
+        translateX: [-20, 0],
+        delay: anime.stagger(100),
+        easing: 'easeOutExpo',
+        duration: 600
+      });
+    }
+
+    function tipificar(leadId) {
+      anime({
+        targets: event.target,
+        scale: [1, 0.95, 1],
+        duration: 300
+      });
+      
+      const url = `https://apmanager.aplatam.com/admin/Ventas/Consulta/Lead/${leadId}`;
+      client.invoke('routeTo', 'ticket', datosTicket.id);
+      window.open(url, '_blank');
+    }
+
+    function verPerfil(leadId) {
+      anime({
+        targets: event.target,
+        scale: [1, 0.95, 1],
+        duration: 300
+      });
+      
+      const url = `https://apmanager.aplatam.com/admin/Ventas/Consulta/Lead/${leadId}`;
+      window.open(url, '_blank');
+    }
+
+    // Buscar al presionar Enter
+    document.getElementById('searchInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') buscar();
+    });
+
+    // Inicializar al cargar
+    inicializar();
+  </script>
+</body>
+</html>

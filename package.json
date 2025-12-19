@@ -1,0 +1,18 @@
+{
+  "name": "apmanager-students-platform",
+  "version": "1.0.0",
+  "description": "Plataforma de integracion con APManager",
+  "main": "api-servidor.js",
+  "scripts": {
+    "start": "node api-servidor.js"
+  },
+  "keywords": ["apmanager", "students"],
+  "author": "ian david cabanas moran",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "better-sqlite3": "^12.5.0",
+    "cors": "^2.8.5",
+    "playwright": "^1.57.0"
+  }
+}

@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APLATAM - Acceso</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      min-height: 100vh;
+      background: #000000;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #ffffff;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      padding: 2rem;
+    }
+
+    /* Logo Animation */
+    .main-logo {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      max-width: 600px;
+      margin-bottom: 3rem;
+    }
+
+    .logo-animation-wrapper {
+      position: relative;
+      width: 100%;
+      padding-bottom: 12%;
+    }
+
+    .logo-animation {
+      pointer-events: none;
+      overflow: visible;
+      display: flex;
+      flex-shrink: 0;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: absolute;
+      top: 50%;
+      left: 25%;
+      width: 1000px;
+      height: 240px;
+      margin: -120px 0 0 -500px;
+      transform: scale(.633333);
+    }
+
+    .anime-logo {
+      overflow: visible;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      width: 1000px;
+      height: 120px;
+    }
+
+    .anime-logo-signs {
+      overflow: visible;
+      display: flex;
+      align-items: flex-end;
+      position: relative;
+      width: 100%;
+      height: 512px;
+      margin-top: -352px;
+    }
+
+    .logo-letter {
+      display: flex;
+      align-items: flex-end;
+      overflow: visible;
+      height: 100%;
+      margin: 0 15px;
+    }
+
+    .bounced {
+      transform-origin: 50% 100% 0px;
+      transform: translateY(200px) scaleX(.55) scaleY(.8);
+    }
+
+    .logo-animation .bounce {
+      overflow: visible;
+      position: absolute;
+      left: 0;
+      bottom: 70px;
+    }
+
+    .logo-animation .dot {
+      opacity: 0.001;
+      position: absolute;
+      z-index: 10;
+      top: 0;
+      left: 0;
+      width: 40px;
+      height: 40px;
+      margin: -20px 0 0 -20px;
+      background-color: #ffffff;
+      border-radius: 50%;
+      transform: translate3d(0,0,0);
+    }
+
+    .logo-animation .logo-letter svg {
+      overflow: visible;
+      fill: none;
+      fill-rule: evenodd;
+    }
+
+    .logo-animation .line {
+      fill: none;
+      fill-rule: evenodd;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 50;
+      stroke: #ffffff;
+    }
+
+    /* Auth Card */
+    .auth-card {
+      opacity: 0;
+      background: #111111;
+      border: 1px solid #333333;
+      border-radius: 16px;
+      padding: 2.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+
+    .auth-card.visible {
+      opacity: 1;
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .auth-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      text-align: center;
+      color: #ffffff;
+    }
+
+    .auth-subtitle {
+      font-size: 0.875rem;
+      color: #9ca3af;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #d1d5db;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: 0.9375rem;
+      color: #ffffff;
+      background: #1a1a1a;
+      border: 1px solid #333333;
+      border-radius: 8px;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .form-input:focus {
+      background: #222222;
+      border-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 0.875rem;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      color: #000000;
+      background: #ffffff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 0.5rem;
+    }
+
+    .btn:hover {
+      background: #e5e5e5;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      background: #444444;
+      color: #666666;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .toggle-auth {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-siz9ca3af;
+    }
+
+    .toggle-link {
+      color: #ffffff
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .toggle-link:hover {
+      text-decoration: underline;
+    }
+
+    .error-message {
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      background: #2d1111;
+      border: 1px solid #5c1f1f;
+      border-radius: 8px;
+      color: #ff6b6b;
+      font-size: 0.875rem;
+      display: none;
+    }
+
+    .error-message.visible {
+      display: block;
+    }
+
+    .success-message {
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      background: #0f2d1a;
+      border: 1px solid #1f5c2f;
+      border-radius: 8px;
+      color: #4ade80;
+      font-size: 0.875rem;
+      display: none;
+    }
+
+    .success-message.visible {
+      display: block;
+    }
+
+    .register-code-note {
+      font-size: 0.8125rem;
+      color: #9ca3af;
+      margin-top: 0.5rem;
+      text-align: center;
+      font-style: italic;
+    }
+
+    #registerForm {
+      display: none;
+    }
+
+    #registerForm.active {
+      display: block;
+    }
+
+    #loginForm.hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="main-logo">
+      <div class="logo-animation-wrapper">
+        <div class="logo-animation">
+          <div class="anime-logo">
+            <div class="anime-logo-signs">
+              <div class="logo-letter letter-a">
+                <svg class="bounced" viewBox="0 0 200 240" width="200" height="240">
+                  <path class="line" d="M30 20h130c9.996 0 10 40 10 60v140H41c-11.004 0-11-40-11-60s-.004-60 10-60h110"/>
+                </svg>
+              </div>
+              <div class="logo-letter letter-p">
+                <svg class="bounced" viewBox="0 0 200 240" width="200" height="240">
+                  <path class="line" d="M30 220V20h100c25 0 40 15 40 45s-15 45-40 45H30"/>
+                </svg>
+              </div>
+              <div class="logo-letter letter-l">
+                <svg class="bounced" viewBox="0 0 200 240" width="200" height="240">
+                  <path class="line" d="M30 20v200h130"/>
+                </svg>
+              </div>
+              <div class="logo-letter letter-a2">
+                <svg class="bounced" viewBox="0 0 200 240" width="200" height="240">
+                  <path class="line" d="M30 20h130c9.996 0 10 40 10 60v140H41c-11.004 0-11-40-11-60s-.004-60 10-60h110"/>
+                </svg>
+              </div>
+              <div class="logo-letter letter-t">
+                <svg class="bounced" viewBox="0 0 200 240" width="200" height="240">
+                  <path class="line" d="M20 40h160M100 40v180"/>
+                </svg>
+              </div>
+              <div class="logo-letter letter-a3">
+                <svg class="bounced" viewBox="0 0 200 240" width="200" height="240">
+                  <path class="line" d="M30 20h130c9.996 0 10 40 10 60v140H41c-11.004 0-11-40-11-60s-.004-60 10-60h110"/>
+                </svg>
+              </div>
+              <div class="logo-letter letter-m">
+                <svg class="bounced" viewBox="0 0 340 240" width="340" height="240" fill="none" fill-rule="evenodd">
+                  <path class="line" 
+                    d="M240,220 L240,60 C240,28.954305 231.344172,20 220.666667,20 C171.555556,20 254.832031,20 170,20 C85.1679688,20 168.444444,20 119.333333,20 C108.655828,20 100,28.954305 100,60 L100,220" 
+                    data-d2="M310,220 L310,60 C310,28.954305 301.344172,20 290.666667,20 C241.555556,20 254.832031,110 170,110 C85.1679688,110 98.4444444,20 49.3333333,20 C38.6558282,20 30,28.954305 30,60 L30,220" 
+                    data-d3="M310,220 L310,60 C310,28.954305 301.344172,20 290.666667,20 C241.555556,20 254.832031,20 170,20 C85.1679688,20 98.4444444,20 49.3333333,20 C38.6558282,20 30,28.954305 30,60 L30,220" 
+                  />
+                </svg>
+              </div>
+              <div class="bounce">
+                <svg viewBox="0 0 1100 260" width="1100" height="260" fill="none">
+                  <path d="M730,240 C730,111.154418 708.971354,40 630.160048,40 C551.348741,40 530,127.460266 530,210"/>
+                </svg>
+                <div class="dot"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-card" id="authCard">
+      <div id="errorMessage" class="error-message"></div>
+      <div id="successMessage" class="success-message"></div>
+
+      <!-- Login Form -->
+      <form id="loginForm">
+        <h1 class="auth-title">Bienvenido</h1>
+        <p class="auth-subtitle">Ingresa con tu correo y contraseña de APlatam</p>
+
+        <div class="form-group">
+          <label class="form-label" for="loginEmail">Correo electrónico</label>
+          <input type="email" id="loginEmail" class="form-input" required placeholder="tu@aplatam.com">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="loginPassword">Contraseña</label>
+          <input type="password" id="loginPassword" class="form-input" required placeholder="••••••••">
+        </div>
+
+        <button type="submit" class="btn">Ingresar</button>
+
+        <div class="toggle-auth">
+          ¿Primera vez? <a class="toggle-link" id="showRegister">Regístrate aquí</a>
+        </div>
+      </form>
+
+      <!-- Register Form -->
+      <form id="registerForm">
+        <h1 class="auth-title">Registro</h1>
+        <p class="auth-subtitle">Crea tu cuenta con tus credenciales de APlatam</p>
+
+        <div class="form-group">
+          <label class="form-label" for="registerEmail">Correo electrónico</label>
+          <input type="email" id="registerEmail" class="form-input" required placeholder="tu@aplatam.com">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="registerPassword">Contraseña</label>
+          <input type="password" id="registerPassword" class="form-input" required placeholder="••••••••">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="registerCode">Código de registro</label>
+          <input type="text" id="registerCode" class="form-input" required placeholder="Ingresa el código">
+          <p class="register-code-note">Código de acceso: <strong>Aplatam10</strong></p>
+        </div>
+
+        <button type="submit" class="btn">Crear cuenta</button>
+
+        <div class="toggle-auth">
+          ¿Ya tienes cuenta? <a class="toggle-link" id="showLogin">Inicia sesión</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  <script>
+    const API_URL = 'http://localhost:3001';
+
+    // Logo Animation
+    function fitElementToParent(el, padding, exception) {
+      var timeout = null;
+      function resize() {
+        if (timeout) clearTimeout(timeout);
+        anime.set(el, {scale: 1});
+        if (exception) anime.set(exception, {scale: 1});
+        var pad = padding || 0;
+        var parentEl = el.parentNode;
+        var elOffsetWidth = el.offsetWidth - pad;
+        var parentOffsetWidth = parentEl.offsetWidth;
+        var ratio = parentOffsetWidth / elOffsetWidth;
+        var invertedRatio = elOffsetWidth / parentOffsetWidth;
+        timeout = setTimeout(function() {
+          anime.set(el, {scale: ratio});
+          if (exception) anime.set(exception, {scale: invertedRatio});
+        }, 10);
+      }
+      resize();
+      window.addEventListener('resize', resize);
+    }
+
+    var logoAnimation = (function() {
+      var logoAnimationEl = document.querySelector('.logo-animation');
+      var bouncePath = anime.path('.bounce path');
+
+      fitElementToParent(logoAnimationEl, 0, '.bounce svg');
+
+      anime.set(['.letter-a', '.letter-p', '.letter-l', '.letter-a2'], {translateX: 150});
+      anime.set(['.letter-t', '.letter-a3', '.letter-m'], {translateX: -150});
+      anime.set('.dot', { translateX: 730, translateY: -200 });
+
+      var logoAnimationTL = anime.timeline({
+        autoplay: false,
+        easing: 'easeOutSine'
+      })
+      .add({
+        targets: '.bounced',
+        transformOrigin: ['50% 100% 0px', '50% 100% 0px'],
+        translateY: [
+          {value: [150, -160], duration: 190, endDelay: 20, easing: 'cubicBezier(0.225, 1, 0.915, 0.980)'},
+          {value: 4, duration: 120, easing: 'easeInQuad'},
+          {value: 0, duration: 120, easing: 'easeOutQuad'}
+        ],
+        scaleX: [
+          {value: [.25, .85], duration: 190, easing: 'easeOutQuad'},
+          {value: 1.08, duration: 120, delay: 85, easing: 'easeInOutSine'},
+          {value: 1, duration: 260, delay: 25, easing: 'easeOutQuad'}
+        ],
+        scaleY: [
+          {value: [.3, .8], duration: 120, easing: 'easeOutSine'},
+          {value: .35, duration: 120, delay: 180, easing: 'easeInOutSine'},
+          {value: .57, duration: 180, delay: 25, easing: 'easeOutQuad'},
+          {value: .5, duration: 190, delay: 15, easing: 'easeOutQuad'}
+        ],
+        delay: anime.stagger(60)
+      }, 200)
+      .add({
+        targets: '.dot',
+        opacity: { value: 1, duration: 100 },
+        translateY: 250,
+        scaleY: [4, .7],
+        scaleX: { value: 1.3, delay: 100, duration: 200},
+        duration: 280,
+        easing: 'cubicBezier(0.350, 0.560, 0.305, 1)'
+      }, '-=290')
+      .add({
+        targets: '.letter-m .line',
+        easing: 'easeOutElastic(1, .8)',
+        duration: 600,
+        d: function(el) { return el.dataset.d2 },
+        begin: function(a) { a.animatables[0].target.removeAttribute('stroke-dasharray'); }
+      }, '-=140')
+      .add({
+        targets: ['.letter-a', '.letter-p', '.letter-l', '.letter-a2', '.letter-t', '.letter-a3', '.letter-m'],
+        translateX: 0,
+        easing: 'easeOutElastic(1, .6)',
+        duration: 800,
+        delay: anime.stagger(40, {from: 3.5})
+      }, '-=600')
+      .add({
+        targets: '.letter-m .line',
+        d: function(el) { return el.dataset.d3 },
+        easing: 'spring(.2, 200, 3, 60)',
+      }, '-=680')
+      .add({
+        targets: '.dot',
+        translateX: bouncePath('x'),
+        translateY: bouncePath('y'),
+        rotate: {value: '1turn', duration: 790},
+        scaleX: { value: 1, duration: 50, easing: 'easeOutSine' },
+        scaleY: [
+          { value: [1, 1.5], duration: 50, easing: 'easeInSine' },
+          { value: 1, duration: 50, easing: 'easeOutExpo' }
+        ],
+        easing: 'cubicBezier(0, .74, 1, .255)',
+        duration: 800
+      }, '-=1273')
+      .add({
+        targets: '.dot',
+        scale: 1,
+        rotate: '1turn',
+        scaleY: {value: .5, delay: 0, duration: 150, delay: 230},
+        translateX: 530,
+        translateY: [
+          {value: 244, duration: 100},
+          {value: 204, duration: 200, delay: 130},
+          {value: 224, duration: 225, easing: 'easeOutQuad', delay: 25}
+        ],
+        duration: 200,
+        easing: 'easeOutSine'
+      }, '-=474')
+      .add({
+        targets: '.logo-letter',
+        translateY: [
+          {value: 40, duration: 150, easing: 'easeOutQuart'},
+          {value: 0, duration: 800, easing: 'easeOutElastic(1, .5)'}
+        ],
+        strokeDashoffset: [anime.setDashoffset, 0],
+        delay: anime.stagger(50, {from: 'center'})
+      }, '-=670')
+      .add({
+        targets: '.dot',
+        opacity: 0,
+        scale: 0,
+        duration: 300,
+        easing: 'easeOutQuad'
+      }, '-=700')
+      .add({
+        targets: '.bounced',
+        scaleY: [
+          {value: .4, duration: 150, easing: 'easeOutQuart'},
+          {value: .5, duration: 800, easing: 'easeOutElastic(1, .5)'}
+        ],
+        delay: anime.stagger(50, {from: 'center'})
+      }, '-=1090')
+
+      return logoAnimationTL;
+    })();
+
+    // Start animation
+    logoAnimation.play();
+    setTimeout(() => {
+      document.getElementById('authCard').classList.add('visible');
+    }, 2000);
+
+    // Auth Logic
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const showRegister = document.getElementById('showRegister');
+    const showLogin = document.getElementById('showLogin');
+    const errorMessage = document.getElementById('errorMessage');
+    const successMessage = document.getElementById('successMessage');
+
+    showRegister.addEventListener('click', (e) => {
+      e.preventDefault();
+      loginForm.classList.add('hidden');
+      registerForm.classList.add('active');
+      clearMessages();
+    });
+
+    showLogin.addEventListener('click', (e) => {
+      e.preventDefault();
+      registerForm.classList.remove('active');
+      loginForm.classList.remove('hidden');
+      clearMessages();
+    });
+
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.classList.add('visible');
+      successMessage.classList.remove('visible');
+    }
+
+    function showSuccess(message) {
+      successMessage.textContent = message;
+      successMessage.classList.add('visible');
+      errorMessage.classList.remove('visible');
+    }
+
+    function clearMessages() {
+      errorMessage.classList.remove('visible');
+      successMessage.classList.remove('visible');
+    }
+
+    // Login
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearMessages();
+      
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      try {
+        const response = await fetch(`${API_URL}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          localStorage.setItem('aplatam_token', data.token);
+          localStorage.setItem('aplatam_user', JSON.stringify(data.user));
+          window.location.href = 'widget-demo.html';
+        } else {
+          showError(data.error || 'Error al iniciar sesión');
+        }
+      } catch (error) {
+        showError('Error de conexión. Verifica que el servidor esté activo.');
+      }
+    });
+
+    // Register
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearMessages();
+      
+      const email = document.getElementById('registerEmail').value;
+      const password = document.getElementById('registerPassword').value;
+      const code = document.getElementById('registerCode').value;
+
+      if (code !== 'Aplatam10') {
+        showError('Código de registro incorrecto');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/api/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, code })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showSuccess('¡Cuenta creada! Redirigiendo...');
+          setTimeout(() => {
+            document.getElementById('registerEmail').value = '';
+            document.getElementById('registerPassword').value = '';
+            document.getElementById('registerCode').value = '';
+            registerForm.classList.remove('active');
+            loginForm.classList.remove('hidden');
+          }, 1500);
+        } else {
+          showError(data.error || 'Error al registrar usuario');
+        }
+      } catch (error) {
+        showError('Error de conexión. Verifica que el servidor esté activo.');
+      }
+    });
+
+    // Check if already logged in
+    if (localStorage.getItem('aplatam_token')) {
+      window.location.href = 'widget-demo.html';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "name": "APManager Student Search",
+  "author": {
+    "name": "AP Latam",
+    "email": "support@aplatam.com",
+    "url": "https://aplatam.com"
+  },
+  "defaultLocale": "es",
+  "private": false,
+  "location": {
+    "support": {
+      "ticket_sidebar": {
+        "url": "assets/iframe.html",
+        "flexible": true
+      }
+    }
+  },
+  "version": "1.0.0",
+  "frameworkVersion": "2.0",
+  "parameters": [
+    {
+      "name": "api_url",
+      "type": "url",
+      "required": false,
+      "default": "http://localhost:3000"
+    }
+  ]
+}

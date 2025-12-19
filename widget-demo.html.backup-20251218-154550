@@ -1,0 +1,891 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APManager Widget Demo</title>
+  <script>
+    // Verificar autenticación
+    const token = localStorage.getItem('aplatam_token');
+    if (!token) {
+      window.location.href = 'login.html';
+    } else {
+      // Verificar token con el servidor
+      fetch('http://localhost:3001/api/auth/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (!data.valid) {
+          localStorage.removeItem('aplatam_token');
+          localStorage.removeItem('aplatam_user');
+          window.location.href = 'login.html';
+        }
+      })
+      .catch(() => {
+        // Si hay error de conexiÃ³n, permitir acceso local
+        console.warn('No se pudo verificar token, modo offline');
+      });
+    }
+  </script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #fafafa;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .widget-container {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 450px;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(30px);
+      border: 1px solid #e5e7eb;
+    }
+
+    .widget-header {
+      background: white;
+      padding: 32px 24px 24px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: center;
+    }
+
+    .widget-logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 20px;
+      transform: scale(0);
+    }
+
+    .widget-logo svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .widget-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      opacity: 0;
+      color: #111827;
+      letter-spacing: -0.5px;
+    }
+
+    .widget-subtitle {
+      font-size: 14px;
+      opacity: 0;
+      color: #6b7280;
+      font-weight: 400;
+    }
+
+    .widget-content {
+      padding: 24px;
+    }
+
+    .search-box {
+      position: relative;
+      margin-bottom: 24px;
+      opacity: 0;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 14px 48px 14px 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 15px;
+      transition: all 0.2s ease;
+      outline: none;
+      background: #fafafa;
+    }
+
+    .search-input:focus {
+      border-color: #111827;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .search-icon {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #6b7280;
+      font-size: 20px;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .search-icon:hover {
+      color: #111827;
+    }
+
+    .results-container {
+      opacity: 0;
+    }
+
+    .result-card {
+      background: white;
+      border-radius: 6px;
+      padding: 20px;
+      margin-bottom: 12px;
+      border: 1px solid #e5e7eb;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.2s ease;
+    }
+
+    .result-card:hover {
+      border-color: #111827;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .result-avatar {
+      width: 48px;
+      height: 48px;
+      background: #111827;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 16px;
+      margin-right: 14px;
+      letter-spacing: 0.5px;
+    }
+
+    .result-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #2d3748;
+    }
+
+    .result-info {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .info-row {
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+      color: #4a5568;
+    }
+
+    .info-icon {
+      margin-right: 8px;
+      width: 20px;
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 11px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 0.3px;
+    }
+
+    .btn-primary {
+      background: #111827;
+      color: white;
+      border: 1px solid #111827;
+    }
+
+    .btn-primary:hover {
+      background: #000000;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #111827;
+      border: 1px solid #d1d5db;
+    }
+
+    .btn-secondary:hover {
+      border-color: #111827;
+      background: #f9fafb;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px 20px;
+      color: #718096;
+    }
+
+    .loading-spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #111827;
+      border-radius: 50%;
+      margin: 0 auto 16px;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .info-row a {
+      color: #111827;
+      text-decoration: none;
+      border-bottom: 1px solid #d1d5db;
+      transition: border-color 0.2s ease;
+    }
+
+    .info-row a:hover {
+      border-bottom-color: #111827;
+    }
+
+    .icon-svg {
+      width: 16px;
+      height: 16px;
+      stroke: #6b7280;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+
+    .search-icon-svg {
+      width: 20px;
+      height: 20px;
+      stroke: #6b7280;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      cursor: pointer;
+      transition: stroke 0.2s ease;
+    }
+
+    .search-icon-svg:hover {
+      stroke: #111827;
+    }
+    .user-info {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+
+    .logout-btn {
+      padding: 6px 14px;
+      background: white;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      color: #374151;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .logout-btn:hover {
+      background: #f9fafb;
+      border-color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+  <div class="user-info">
+    <span id="userEmail"></span>
+    <button class="logout-btn" onclick="logout()">Salir</button>
+  </div>
+  
+  <div class="widget-container">
+    <div class="widget-header">
+      <div class="widget-logo">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="35" r="15" fill="none" stroke="#111827" stroke-width="2"/>
+          <path d="M 30 60 Q 50 50 70 60 L 75 85 Q 50 95 25 85 Z" fill="none" stroke="#111827" stroke-width="2"/>
+          <circle cx="50" cy="35" r="5" fill="#111827"/>
+        </svg>
+      </div>
+      <h1 class="widget-title">APManager</h1>
+      <p class="widget-subtitle">Búsqueda de Estudiantes</p>
+    </div>
+
+    <div class="widget-content">
+      <div class="search-box">
+        <input 
+          type="text" 
+          class="search-input" 
+          placeholder="Buscar por email, teléfono o nombre..."
+          id="searchInput"
+        >
+        <svg class="search-icon-svg" onclick="buscar()" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%);" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>
+      </div>
+
+      <div id="results" class="results-container"></div>
+    </div>
+  </div>
+
+  <script src=https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js></script>
+  <script>
+    // Mostrar email del usuario
+    const user = JSON.parse(localStorage.getItem('aplatam_user') || '{}');
+    if (user.email) {
+      document.getElementById('userEmail').textContent = user.email;
+    }
+
+    // FunciÃ³n de logout
+    function logout() {
+      localStorage.removeItem('aplatam_token');
+      localStorage.removeItem('aplatam_user');
+      window.location.href = 'login.html';
+    }
+
+    // AnimaciÃ³n de entrada del widget - estilo minimalista
+    anime.timeline({
+      easing: 'easeOutQuart'
+    })
+    .add({
+      targets: '.widget-container',
+      opacity: [0, 1],
+      translateY: [20, 0],
+      duration: 600
+    })
+    .add({
+      targets: '.widget-logo',
+      scale: [0, 1],
+      duration: 500,
+      easing: 'easeOutBack'
+    }, '-=400')
+    .add({
+      targets: '.widget-logo svg path, .widget-logo svg circle',
+      strokeDashoffset: [anime.setDashoffset, 0],
+      duration: 800,
+      easing: 'easeOutQuart'
+    }, '-=500')
+    .add({
+      targets: '.widget-title',
+      opacity: [0, 1],
+      translateY: [10, 0],
+      duration: 400
+    }, '-=400')
+    .add({
+      targets: '.widget-subtitle',
+      opacity: [0, 1],
+      translateY: [20, 0],
+      duration: 400
+    }, '-=200')
+    .add({
+      targets: '.search-box',
+      opacity: [0, 1],
+      translateY: [20, 0],
+      duration: 400
+    }, '-=200');
+
+    // Datos de ejemplo
+    const datosEjemplo = [
+      {
+        nombre: 'Astrid Jaramillo CalderÃ³n',
+        email: 'astridjaramilloc@gmail.com',
+        telefono: '593998591791',
+        programa: 'MaestrÃ­a en Gerencia de Instituciones de Salud',
+        matricula: '51543',
+        leadId: '3085991'
+      },
+      {
+        nombre: 'Juan PÃ©rez GarcÃ­a',
+        email: 'juan.perez@gmail.com',
+        telefono: '593991234567',
+        programa: 'MaestrÃ­a en AdministraciÃ³n de Empresas',
+        matricula: '51544',
+        leadId: '3085992'
+      }
+    ];
+
+    async function buscar() {
+      const input = document.getElementById('searchInput').value.trim();
+      const resultsContainer = document.getElementById('results');
+
+      if (!input) {
+        resultsContainer.innerHTML = '';
+        anime({
+          targets: '.results-container',
+          opacity: 0,
+          duration: 300
+        });
+        return;
+      }
+
+      // Mostrar loading
+      resultsContainer.innerHTML = `
+        <div class="loading">
+          <div class="loading-spinner"></div>
+          <p>Buscando en base de datos local...</p>
+        </div>
+      `;
+
+      anime({
+        targets: '.results-container',
+        opacity: [0, 1],
+        duration: 300
+      });
+
+      try {
+        // Primero buscar en DB local
+        const responseLocal = await fetch(`http://localhost:3001/api/buscar/${encodeURIComponent(input)}`);
+        const dataLocal = await responseLocal.json();
+
+        let resultados = [];
+
+        if (dataLocal.success && dataLocal.resultados.length > 0) {
+          resultados = dataLocal.resultados.map(item => ({
+            nombre: item.nombre,
+            email: item.email,
+            telefono: item.telefono,
+            programa: item.programa,
+            matricula: item.matricula,
+            leadId: item.lead_id,
+            leadUrl: item.lead_url,
+            estado: item.estado
+          }));
+        } else {
+          // Si no hay resultados locales, buscar en APManager
+          resultsContainer.innerHTML = `
+            <div class="loading">
+              <div class="loading-spinner"></div>
+              <p style="margin-bottom: 8px;">Indagando en APManager...</p>
+              <p style="font-size: 13px; color: #9ca3af;">Seguimos buscando la información para ti</p>
+            </div>
+          `;
+
+          const responseAP = await fetch(`http://localhost:3001/api/buscar-apmanager/${encodeURIComponent(input)}`);
+          const dataAP = await responseAP.json();
+
+          if (dataAP.success && dataAP.resultados.length > 0) {
+            resultados = dataAP.resultados.map(item => ({
+              nombre: item.nombre,
+              email: item.email,
+              telefono: item.telefono,
+              programa: item.programa,
+              matricula: item.matricula,
+              leadId: item.lead_id,
+              leadUrl: item.lead_url,
+              estado: item.estado
+            }));
+
+            // Mensaje de Ã©xito
+            setTimeout(() => {
+              resultsContainer.innerHTML = `
+                <div class="loading">
+                  <p style="color: #48bb78;">✅ Encontrado en APManager (${dataAP.nuevosEnDB} registros guardados en DB)</p>
+                </div>
+              `;
+              setTimeout(() => mostrarResultados(resultados), 1000);
+            }, 500);
+            return;
+          }
+        }
+
+        mostrarResultados(resultados);
+      } catch (error) {
+        console.log('Servidor no disponible, reintentando...');
+        // No mostrar error, solo mantener Buscando... y reintentar
+        reintentoSilencioso(input);
+      }
+    }
+
+    function mostrarResultados(resultados) {
+      const resultsContainer = document.getElementById('results');
+
+      if (resultados.length === 0) {
+        resultsContainer.innerHTML = `
+          <div class="loading">
+            <p>No se encontraron resultados</p>
+          </div>
+        `;
+        return;
+      }
+
+      resultsContainer.innerHTML = resultados.map(item => {
+        const iniciales = item.nombre.split(' ').map(n => n[0]).join('').substring(0, 2);
+        return `
+          <div class="result-card">
+            <div class="result-header">
+              <div class="result-avatar">${iniciales}</div>
+              <div class="result-name">${item.nombre}</div>
+            </div>
+            <div class="result-info">
+              <div class="info-row">
+                <span style="margin-right: 8px;">🆔</span>
+                <span><strong>Lead ID:</strong> ${item.leadId}</span>
+              </div>
+              <div class="info-row">
+                <span style="margin-right: 8px;">🔗</span>
+                <span><a href="${item.leadUrl}" target="_blank">Ver en APManager ←</a></span>
+              </div>
+              <div class="info-row">
+                <svg class="icon-svg" viewBox="0 0 24 24">
+                  <path d=M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z/>
+                  <polyline points=22,6 12,13 2,6/>
+                </svg>
+                <span>${item.email}</span>
+              </dipan style="margin-right: 8px;">📧</spanth d=M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z/>
+                </svg>
+                <span style="margin-right: 8px;">📱</spanass="info-row">
+                <svg class="icon-svg" viewBox="0 0 24 24">
+                  <path d=M22 10v6M2 10l10-5 10 5-10 5z/>
+                  <path d=M6 12v5c3 3 9 3 12 0v-5/>
+                </svg>
+                <span>${item.programa}</span>
+              </dipan style="margin-right: 8px;">🎓</spanth d=M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z/>
+                  <polyline points=14 2 14 8 20 8/>
+                  <line x1=16 y1=13 x2=8 y2=13/>
+                  <line x1=16 y1=17 x2=8 y2=17/>
+                  pan style="margin-right: 8px;">📄</span class="btn" btn-primary onclick=tipificar('${item.leadId}')>
+                Tipificar
+              </button>
+              <button class="btn" btn-primary onclick=inscribirPrioritaria('${item.leadId}') style="background: #3b82f6; border-color: #3b82f6;">
+                Inscribir Prioritaria
+              </button>
+              <button class="btn" btn-secondary onclick=verPerfil('${item.leadId}')>
+                Ver Perfil
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Animar cada tarjeta de resultado
+      anime({
+        targets: '.result-card',
+        opacity: [0, 1],
+        translateX: [-20, 0],
+        delay: anime.stagger(100),
+        easing: 'easeOutExpo',
+        duration: 600
+      });
+
+      // Cargar materias en paralelo para todos los resultados
+      setTimeout(() => {
+        const promesas = resultados.map((item, index) => {
+          if (item.leadId) {
+            return cargarMaterias(item.leadId, index);
+          }
+          return Promise.resolve();
+        });
+        Promise.all(promesas);
+      }, 500);
+    }
+
+    async function cargarMaterias(leadId, cardIndex) {
+      const resultCard = document.querySelectorAll('.result-card')[cardIndex];
+      if (!resultCard) return;
+
+      // Agregar loading de materias dentro de la tarjeta
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'materias-loading';
+      loadingDiv.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px; padding: 16px; border-top: 1px solid #e5e7eb; background: #f9fafb;">
+          <svg class="icon-svg" viewBox="0 0 24 24" style="animation: spin 1s linear infinite;">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+            <path d=M12 2 A10 10 0 0 1 22 12 stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+          </svg>
+          <span style="color: #6b7280; font-size: 14px;">Cargando materias disponibles...</span>
+        </div>
+      `;
+      resultCard.appendChild(loadingDiv);
+
+      try {
+        const response = await fetch(`http://localhost:3001/api/materias/${leadId}`);
+        const data = await response.json();
+
+        if (data.success && data.materias.length > 0) {
+          loadingDiv.innerHTML = `
+            <div style="border-top: 1px solid #e5e7eb; padding: 20px; background: #fafafa;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h4 style="margin: 0; font-size: 13px; font-weight: 600; color: #111827; letter-spacing: 0.3px;">
+                  Materias Disponibles (${data.materias.length})
+                </h4>
+                <span style="font-size: 12px; color: #6b7280;">${data.materias_pagadas || ''}</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                ${data.materias.map(m => `
+                  <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px; transition: all 0.2s;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                      <div style="flex: 1;">
+                        <div style="color: #111827; font-size: 13px; font-weight: 500; margin-bottom: 4px;">${m.materia}</div>
+                        <div style="font-size: 11px; color: #9ca3af;">${m.codigo} • ${m.tipo}</div>
+                      </div>
+                      ${m.estado_inscripcion === 'Inscrito' ? '<span style="background: #10b981; color: white; font-size: 10px; padding: 4px 8px; border-radius: 4px; white-space: nowrap; font-weight: 500; letter-spacing: 0.3px;">✓ Inscrito</span>' : 
+                        m.estado_inscripcion === 'Disponible' ? '<span style="background: #3b82f6; color: white; font-size: 10px; padding: 4px 8px; border-radius: 4px; white-space: nowrap; font-weight: 500; letter-spacing: 0.3px;">Inscribir</span>' : 
+                        '<span style="background: #ef4444; color: white; font-size: 10px; padding: 4px 8px; border-radius: 4px; white-space: nowrap; font-weight: 500; letter-spacing: 0.3px;">No Inscrito</span>'
+                      }
+                    </div>
+                    <div style="display: flex; gap: 12px; font-size: 11px; color: #6b7280; margin-top: 8px; flex-wrap: wrap;">
+                      <span style="display: flex; align-items: center; gap: 4px;">
+                        <svg style="width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; viewBox="0 0 24 24">
+                          <rect x=3 y=4 width=18 height=18 rx=2 ry=2/>
+                          <line x1=16 y1=2 x2=16 y2=6/>
+                          <line x1=8 y1=2 x2=8 y2=6/>
+                          <line x1=3 y1=10 x2=21 y2=10/>
+                        </svg>
+                        ${m.periodo_inicio}
+                      </span>
+                      <span>Prioridad ${m.prioridad}</span>
+                      <s📅 ${m.periodo_inicio}
+                      </span>
+                      <span>🔢 Prioridad ${m.prioridad}</span>
+                      <span>📚 
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+
+          // Animar entrada de materias
+          anime({
+            targets: loadingDiv,
+            opacity: [0, 1],
+            translateY: [-10, 0],
+            duration: 400,
+            easing: 'easeOutQuad'
+          });
+        } else {
+          loadingDiv.innerHTML = `
+            <div style="padding: 16px; border-top: 1px solid #e5e7eb; background: #f9fafb;">
+              <p style="color: #6b7280; font-size: 13px; margin: 0;">ðŸ“š No hay materias disponibles en este Período</p>
+            </div>
+          `;
+        }
+      } catch (error) {
+        loadingDiv.innerHTML = `
+          <div style="padding: 16px; border-top: 1px solid #e5e7eb; background: #fef2f2;">
+            <p style="color: #dc2626; font-size: 13px; margin: 0;">⚠️ Error al cargar materias</p>
+          </div>
+        `;
+      }
+    }
+
+    function tipificar(leadId) {
+      anime({
+        targets: event.target,
+        scale: [1, 0.95, 1],
+        duration: 300,
+        easing: 'easeInOutQuad'
+      });
+      alert(`Tipificando Lead ID: ${leadId}\n\nEn producción abriría: https://apmanager.aplatam.com/admin/Ventas/Consulta/Lead/${leadId}`);
+    }
+
+    async function inscribirPrioritaria(leadId) {
+      const btn = event.target;
+      const originalText = btn.textContent;
+      
+      anime({
+        targets: btn,
+        scale: [1, 0.95, 1],
+        duration: 300,
+        easing: 'easeInOutQuad'
+      });
+
+      btn.textContent = 'Inscribiendo...';
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
+      
+      try {
+        const response = await fetch(`http://localhost:3001/api/inscribir-prioritaria/${leadId}`, {
+          method: 'POST'
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          btn.textContent = '✓ Inscrito';
+          btn.style.background = '#10b981';
+          alert(`✅ Inscripción exitosa\n\nMateria: ${data.materia}\nCódigo: ${data.codigo}\nPrioridad: ${data.prioridad}`);
+          
+          // Recargar materias después de 1 segundo
+          setTimeout(() => {
+            location.reload();
+          }, 1500);
+        } else {
+          throw new Error(data.error || 'Error desconocido');
+        }
+      } catch (error) {
+        btn.textContent = '❌ Error';
+        btn.style.background = '#ef4444';
+        alert(`❌ Error al inscribir: ${error.message}`);
+        
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.style.background = '#3b82f6';
+          btn.disabled = false;
+          btn.style.opacity = '1';
+        }, 2000);
+      }
+    }
+
+    function verPerfil(leadId) {
+      anime({
+        targets: event.target,
+        scale: [1, 0.95, 1],
+        duration: 300,
+        easing: 'easeInOutQuad'
+      });
+      window.open(`https://apmanager.aplatam.com/admin/Ventas/Consulta/Lead/${leadId}`, '_blank');
+    }
+
+    // ========================================================================
+    // REINTENTO SILENCIOSO SIN MOSTRAR ERROR
+    // ========================================================================
+    let reintentoInterval = null;
+    let ultimaBusqueda = '';
+
+    function reintentoSilencioso(termino) {
+      ultimaBusqueda = termino;
+      
+      // Mantener el spinner de Buscando...
+      const resultsContainer = document.getElementById('results');
+      resultsContainer.innerHTML = `
+        <div class="loading">
+          <div class="loading-spinner"></div>
+          <p>Conectando con el servidor...</p>
+        </div>
+      `;
+
+      // Limpiar intervalo anterior si existe
+      if (reintentoInterval) {
+        clearInterval(reintentoInterval);
+      }
+
+      // Reintentar cada 2 segundos indefinidamente
+      reintentoInterval = setInterval(async () => {
+        try {
+          const response = await fetch(`http://localhost:3001/api/buscar/${encodeURIComponent(termino)}`, {
+            signal: AbortSignal.timeout(2000)
+          });
+          
+          if (response.ok) {
+            // ¡Servidor responde! Procesar Búsqueda
+            clearInterval(reintentoInterval);
+            reintentoInterval = null;
+            
+            const data = await response.json();
+            let resultados = [];
+
+            if (data.success && data.resultados.length > 0) {
+              resultados = data.resultados.map(item => ({
+                nombre: item.nombre,
+                email: item.email,
+                telefono: item.telefono,
+                programa: item.programa,
+                matricula: item.matricula,
+                leadId: item.lead_id,
+                leadUrl: item.lead_url,
+                estado: item.estado
+              }));
+              mostrarResultados(resultados);
+            } else {
+              // No encontrado localmente, buscar en APManager
+              buscarEnAPManager(termino);
+            }
+          }
+        } catch (e) {
+          // Servidor aÃºn no disponible, continuar reintentando silenciosamente
+          console.log('Reintentando conexiÃ³n...');
+        }
+      }, 2000);
+    }
+
+    async function buscarEnAPManager(termino) {
+      const resultsContainer = document.getElementById('results');
+      resultsContainer.innerHTML = `
+        <div class="loading">
+          <div class="loading-spinner"></div>
+          <p style="margin-bottom: 8px;">Indagando en APManager...</p>
+          <p style="font-size: 13px; color: #9ca3af;">Seguimos buscando la información para ti</p>
+        </div>
+      `;
+
+      try {
+        const responseAP = await fetch(`http://localhost:3001/api/buscar-apmanager/${encodeURIComponent(termino)}`);
+        const dataAP = await responseAP.json();
+
+        if (dataAP.success && dataAP.resultados.length > 0) {
+          const resultados = dataAP.resultados.map(item => ({
+            nombre: item.nombre,
+            email: item.email,
+            telefono: item.telefono,
+            programa: item.programa,
+            matricula: item.matricula,
+            leadId: item.lead_id,
+            leadUrl: item.lead_url,
+            estado: item.estado
+          }));
+
+          setTimeout(() => {
+            mostrarResultados(resultados);
+          }, 500);
+        } else {
+          mostrarResultados([]);
+        }
+      } catch (error) {
+        reintentoSilencioso(termino);
+      }
+    }
+
+    // Buscar al presionar Enter
+    document.getElementById('searchInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') buscar();
+    });
+
+    // Animar placeholder
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('focus', () => {
+      anime({
+        targets: '.search-input',
+        scale: [1, 1.02, 1],
+        duration: 300
+      });
+    });
+  </script>
+</body>
+</html>
+
+

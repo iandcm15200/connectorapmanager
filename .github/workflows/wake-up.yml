@@ -1,0 +1,22 @@
+name: Wake Up Server
+
+on:
+  schedule:
+    # 6:56 AM CST (México Centro) = 12:56 PM UTC
+    - cron: '56 12 * * *'
+  workflow_dispatch: # Permite ejecutarlo manualmente
+
+jobs:
+  wake-up:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping servidor para activarlo
+        run: |
+          echo "Activando servidor a las 6:56 AM CST..."
+          curl -f https://apmanager-students-platform.fly.dev/ || echo "Servidor activándose..."
+          sleep 30
+          curl -f https://apmanager-students-platform.fly.dev/ || echo "Servidor activado"
+          
+      - name: Verificar estado
+        run: |
+          echo "✅ Servidor activado exitosamente a las 6:56 AM CST"

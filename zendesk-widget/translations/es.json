@@ -1,0 +1,8 @@
+{
+  "app": {
+    "name": "APManager - Búsqueda de Estudiantes",
+    "short_description": "Busca y gestiona estudiantes de APManager desde Zendesk",
+    "long_description": "Herramienta integrada para buscar estudiantes en APManager, ver su información completa y tipificar directamente desde tickets de Zendesk.",
+    "installation_instructions": "1. Instala la app\n2. Configura la URL de tu API (opcional)\n3. ¡Listo! El widget aparecerá en la sidebar de tickets"
+  }
+}

@@ -1,0 +1,43 @@
+# Sesion sensible
+.apmanager-state.json
+.apmanager-state.*.json
+
+# Dependencias
+node_modules/
+package-lock.json
+
+# Build y dist
+dist/
+build/
+*.js.map
+*.d.ts
+
+# IDE y editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Archivos temporales
+temp/
+tmp/
+*.temp
+*.bak
+
+# Archivos de test local
+.env.local
+.env.test
+
+# Carpeta de backup
+src/backup/
+
+# Permitir archivos JS principales
+!api-servidor.js
