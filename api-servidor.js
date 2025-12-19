@@ -212,6 +212,24 @@ app.get('/api/buscar/:termino', (req, res) => {
 // FUNCIONES DE BÃšSQUEDA EN APMANAGER
 // ============================================
 
+// Fuerza un nuevo login destruyendo la sesión actual
+async function forzarNuevoLogin() {
+  console.log('   ðŸ"„ Forzando nuevo login...');
+  
+  // Cerrar todo
+  if (browserGlobal) {
+    try {
+      await browserGlobal.close();
+    } catch (e) {}
+  }
+  browserGlobal = null;
+  contextGlobal = null;
+  pageGlobal = null;
+  
+  // Obtener nueva sesión (forzará autenticación)
+  return await obtenerSesion();
+}
+
 async function obtenerSesion() {
   try {
     // Si ya tenemos browser/context/page abiertos y vÃ¡lidos, reutilizarlos
@@ -290,16 +308,18 @@ async function obtenerSesion() {
       
       // PASO 1.1: Click en botÃ³n Microsoft
       await pageGlobal.click('button:has-text("Microsoft"), a:has-text("Microsoft")');
-      await pageGlobal.waitForURL(/login\.microsoftonline\.com/, { timeout: 15000 });
+      await pageGlobal.waitForURL(/login\.microsoftonline\.com/, { timeout: 30000 });
+      await pageGlobal.waitForTimeout(3000);
       
       // PASO 1.2: Ingresar Email
-      await pageGlobal.waitForSelector('input[type="email"]', { timeout: 10000 });
+      await pageGlobal.waitForSelector('input[type="email"]', { timeout: 20000 });
       await pageGlobal.fill('input[type="email"]', credenciales.email);
+      await pageGlobal.waitForTimeout(1000);
       await pageGlobal.click('input[type="submit"]');
-      await pageGlobal.waitForTimeout(2000);
+      await pageGlobal.waitForTimeout(5000);
       
       // PASO 1.3: Ingresar Password
-      await pageGlobal.waitForSelector('input[type="password"]', { timeout: 10000 });
+      await pageGlobal.waitForSelector('input[type="password"]', { timeout: 20000 });
       await pageGlobal.fill('input[type="password"]', credenciales.password);
       await pageGlobal.click('input[type="submit"]');
       await pageGlobal.waitForTimeout(3000);
