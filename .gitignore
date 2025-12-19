@@ -1,6 +1,7 @@
 # Sesión sensible
 .apmanager-state.json
 .apmanager-state.*.json
+.env
 
 # Dependencias
 node_modules/
@@ -10,6 +11,7 @@ package-lock.json
 dist/
 build/
 *.js
+!api-servidor.js
 *.js.map
 *.d.ts
 
