@@ -307,29 +307,29 @@ async function obtenerSesion() {
       const credenciales = JSON.parse(fs.readFileSync(CREDENTIALS_FILE, 'utf8'));
       
       // PASO 1.1: Click en botÃ³n Microsoft
-      await pageGlobal.click('button:has-text("Microsoft"), a:has-text("Microsoft")');
+      await pageGlobal.getByRole('button', { name: 'Microsoft' }).click();
       await pageGlobal.waitForURL(/login\.microsoftonline\.com/, { timeout: 30000 });
       await pageGlobal.waitForTimeout(3000);
       
       // PASO 1.2: Ingresar Email
-      await pageGlobal.waitForSelector('input[type="email"]', { timeout: 20000 });
-      await pageGlobal.fill('input[type="email"]', credenciales.email);
-      await pageGlobal.waitForTimeout(1000);
-      await pageGlobal.click('input[type="submit"]');
-      await pageGlobal.waitForTimeout(5000);
-      
-      // PASO 1.3: Ingresar Password
-      await pageGlobal.waitForSelector('input[type="password"]', { timeout: 20000 });
-      await pageGlobal.fill('input[type="password"]', credenciales.password);
-      await pageGlobal.click('input[type="submit"]');
+      await pageGlobal.getByRole('textbox', { name: /someone@example.com/i }).fill(credenciales.email);
+      await pageGlobal.waitForTimeout(500);
+      await pageGlobal.getByRole('button', { name: 'Siguiente' }).click();
       await pageGlobal.waitForTimeout(3000);
       
-      // PASO 1.4: Mantener sesiÃ³n iniciada (importante para persistencia)
+      // PASO 1.3: Ingresar Password
+      await pageGlobal.getByRole('textbox', { name: /Escriba la contraseña/i }).fill(credenciales.password);
+      await pageGlobal.waitForTimeout(500);
+      await pageGlobal.getByRole('button', { name: 'Iniciar sesión' }).click();
+      await pageGlobal.waitForTimeout(3000);
+      
+      // PASO 1.4: Mantener sesiÃ³n iniciada
       try {
-        const stayButton = await pageGlobal.waitForSelector('input[type="submit"]', { timeout: 8000 });
-        if (stayButton) await stayButton.click();
+        await pageGlobal.getByRole('checkbox', { name: /No volver a mostrar/i }).check({ timeout: 8000 });
+        await pageGlobal.getByRole('button', { name: 'Sí' }).click();
+        await pageGlobal.waitForTimeout(2000);
       } catch (e) {
-        // No hay problema si no aparece este diÃ¡logo
+        console.log('   ℹ️  No apareció diálogo de mantener sesión');
       }
 
       await pageGlobal.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
